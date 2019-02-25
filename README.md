@@ -1,13 +1,12 @@
 
 ### Dockerfile
-Build a container with this Dockerfile to create a nice desktop with sudo privileges.  It is based on the image `consol/ubuntu-xfce-vnc`.  There are other Linux distros supported. See the [consol docker hub](https://hub.docker.com/r/consol/ubuntu-xfce-vnc/).  
+Build a container with this Dockerfile to create a nice desktop with sudo privileges.  It is based on the image `consol/ubuntu-xfce-vnc`.  Centos and IceWM are also supported. See the [consol docker hub](https://hub.docker.com/r/consol/ubuntu-xfce-vnc/).  
 
-To keep things simple, let's just apply naming conventions based on the value of $USER.
+Docker group:
+* First, ensure you are in the group `docker` by checking `id -Gn`. 
+* To add yourself to the group: `sudo usermod -a -G docker ${USER}` (you will need to log out and log back in to activate the new membership).
 
-First, ensure you are in the group `docker` by checking `id -Gn`. 
-To add yourself to the group: `sudo usermod -a -G docker ${USER}` (you will need to log out and log back in to activate the new membership).
-
-Your main decision: Use a new docker volume? Or use a home directory?  I elected to use a new docker volume.  On the other hand, if you use a directory as a volume then you can access your old files from the new image.
+Volume: 
 * Use a new docker volume: `docker volume create vol-${USER} && export VOLUME="vol-${USER}"`
 * Use your home directory: `export VOLUME="/home/${USER}"`
 
@@ -15,7 +14,7 @@ Build container:
 * Get your UID, using `id -u` and GID, using `id -g`
 * Edit the Dockerfile and put in your username, UID, and GID.
 * Add packages if you want.  This file downloads clion and installs it in /opt
-* Build the container `$ docker build -t vnc-${USER} -f Dockerfile.user ./`
+* Build the container `$ docker build -t vnc-${USER} -f Dockerfile ./`
 
 Run your container:
 * First, find a number `N` that is not used for a vnc server.
@@ -34,7 +33,7 @@ Run your container:
        --cap-add sys_ptrace 
        -p 590<N>:5901 
        --name vnc-${USER} 
-       -v/my/existing/disk/path:/home/${USER}
+       -v${VOLUME}:/home/${USER}
        -e VNC_PW=<your password> 
        -e VNC_RESOLUTION=1280x1024 
 	      vnc-${USER}`
